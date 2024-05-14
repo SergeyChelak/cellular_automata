@@ -1,7 +1,7 @@
 use rand::prelude::*;
 
-const MATRIX_ROWS: usize = 100;
-const MATRIX_COLS: usize = 100;
+const MATRIX_ROWS: usize = 200;
+const MATRIX_COLS: usize = 200;
 
 const TILE_FLOOR: u8 = 0;
 const TILE_WALL: u8 = 1;
@@ -56,18 +56,22 @@ impl Generator {
         if self.noise_density < 100 {
             self.noise_density += 1;
         }
+        self.regenerate();
     }
 
     pub fn decrease_noise_density(&mut self) {
         self.noise_density = self.noise_density.saturating_sub(1);
+        self.regenerate();
     }
 
     pub fn increase_iterations(&mut self) {
         self.iterations = self.iterations.saturating_add(1);
+        self.regenerate();
     }
 
     pub fn decrease_iterations(&mut self) {
         self.iterations = self.iterations.saturating_sub(1);
+        self.regenerate();
     }
 }
 
