@@ -28,6 +28,7 @@ enum Command {
     NextIteration,
     DecreaseIterations,
     Regenerate,
+    ShowStatus,
     Exit,
 }
 
@@ -64,6 +65,7 @@ fn main() -> CAResult<()> {
                 IncreaseNoiseDensity => generator.increase_noise_density(),
                 Regenerate => generator.regenerate(),
                 NextIteration => generator.next_iteration(),
+                ShowStatus => println!("{}", get_status_bar(&generator)),
             }
         }
         canvas.set_draw_color(Color::BLACK);
@@ -123,6 +125,8 @@ fn get_events(event_pump: &mut EventPump) -> Option<Command> {
                 keycode: Some(Keycode::N),
                 ..
             } => return Some(Command::NextIteration),
+
+            Event::KeyDown { .. } => return Some(Command::ShowStatus),
             _ => {}
         }
     }
@@ -160,10 +164,10 @@ fn create_texture<'l>(
     Ok(texture)
 }
 
-// fn get_status_bar(generator: &Generator) -> String {
-//     format!(
-//         "Noise density |Q+ {} -A|  Iterations |W+ {} -S|  R(egenerate)  N(ext iteration)",
-//         generator.noise_density(),
-//         generator.iterations()
-//     )
-// }
+fn get_status_bar(generator: &Generator) -> String {
+    format!(
+        "Noise density |Q+ {} -A|  Iterations |W+ {} -S|  R(egenerate)  N(ext iteration)",
+        generator.noise_density(),
+        generator.iterations()
+    )
+}
