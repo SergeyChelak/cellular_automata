@@ -45,7 +45,7 @@ impl Position {
     }
 
     fn right(&self, dims: &Dimension) -> Option<Position> {
-        if self.col > dims.cols - 1 {
+        if self.col < dims.cols - 1 {
             Some(Position {
                 row: self.row,
                 col: self.col + 1,
@@ -185,6 +185,8 @@ pub fn regions(matrix: &Matrix, value: u8) -> Vec<HashSet<Position>> {
                 if visited.contains(&pos) {
                     continue;
                 }
+                region.insert(pos);
+                visited.insert(pos);
                 [
                     pos.up(&dims),
                     pos.down(&dims),
@@ -197,8 +199,6 @@ pub fn regions(matrix: &Matrix, value: u8) -> Vec<HashSet<Position>> {
                 .for_each(|p| {
                     deque.push_back(p);
                 });
-                region.insert(pos);
-                visited.insert(pos);
             }
             if !region.is_empty() {
                 regions.push(region);

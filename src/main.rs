@@ -21,6 +21,33 @@ const WINDOW_SIZE_WIDTH: u32 = 800;
 const TARGET_FPS: u128 = 60;
 const TARGET_FRAME_DURATION: u128 = 1000 / TARGET_FPS;
 
+type CAColor = (u8, u8, u8);
+
+const CONTOUR_COLOR: CAColor = (0xff, 0x0, 0x0);
+const DEFAULT_COLOR: CAColor = (0xff, 0xff, 0xff);
+const REGION_COLOR: [CAColor; 20] = [
+    (255, 192, 64),
+    (64, 255, 192),
+    (192, 64, 255),
+    (255, 224, 32),
+    (96, 255, 160),
+    (64, 192, 255),
+    (255, 96, 160),
+    (160, 255, 96),
+    (96, 160, 255),
+    (255, 32, 224),
+    (224, 255, 32),
+    (32, 96, 255),
+    (255, 160, 96),
+    (32, 255, 224),
+    (192, 255, 64),
+    (64, 255, 224),
+    (255, 64, 192),
+    (224, 32, 255),
+    (160, 96, 255),
+    (255, 32, 96),
+];
+
 type CAResult<T> = Result<T, String>;
 
 enum Command {
@@ -78,7 +105,6 @@ fn main() -> CAResult<()> {
         let query = texture.query();
         let src = Rect::new(0, 0, query.width, query.height);
         canvas.copy(&texture, src, dest)?;
-        // println!("{}", get_status_bar(&generator));
         canvas.present();
         // delay the rest of the time if needed
         let suspend_ms = TARGET_FRAME_DURATION.saturating_sub(frame_start.elapsed().as_millis());
@@ -161,11 +187,16 @@ fn create_texture<'l>(
             for col in 0..cols as usize {
                 let pos = row * pitch + 3 * col;
                 let mut color = (0, 0, 0);
+                let position = Position { row, col };
                 if matrix[row][col] > 0 {
-                    color = (0xff, 0xff, 0xff);
+                    color = if let Some(id) = generator.region_id(&position) {
+                        REGION_COLOR[id % REGION_COLOR.len()]
+                    } else {
+                        DEFAULT_COLOR
+                    };
                 };
-                if contours.contains(&Position { row, col }) {
-                    color = (0xff, 0x0, 0x0);
+                if contours.contains(&position) {
+                    color = saturate_color(&color, 50);
                 }
                 let (r, g, b) = color;
                 buffer[pos + 0] = r;
@@ -182,5 +213,14 @@ fn get_status_bar(generator: &Generator) -> String {
         "Noise density |Q+ {} -A|  Iterations |W+ {} -S|  R(egenerate)  N(ext iteration)",
         generator.noise_density(),
         generator.iterations()
+    )
+}
+
+fn saturate_color(color: &CAColor, val: u8) -> CAColor {
+    let (r, g, b) = color;
+    (
+        r.saturating_add(val),
+        g.saturating_add(val),
+        b.saturating_add(val),
     )
 }

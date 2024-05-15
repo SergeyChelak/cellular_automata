@@ -4,9 +4,9 @@ use crate::matrix::{
     contours, fill_borders, fill_ratio, moore_neighborhood, noise_matrix, regions, Matrix, Position,
 };
 
-const MATRIX_ROWS: usize = 60;
-const MATRIX_COLS: usize = 60;
-const REGION_THRESHOLD: usize = 1;
+const MATRIX_ROWS: usize = 100;
+const MATRIX_COLS: usize = 100;
+const REGION_THRESHOLD: usize = 3;
 
 const TILE_FLOOR: u8 = 0;
 const TILE_WALL: u8 = 1;
@@ -16,6 +16,7 @@ pub struct Generator {
     iterations: usize,
     matrix: Matrix,
     contours: HashSet<Position>,
+    regions: Vec<HashSet<Position>>,
 }
 
 impl Generator {
@@ -26,6 +27,7 @@ impl Generator {
             iterations: 3,
             matrix,
             contours: Default::default(),
+            regions: Default::default(),
         }
     }
 
@@ -34,6 +36,7 @@ impl Generator {
             return;
         };
         self.matrix = matrix;
+        self.regions = regions(&self.matrix, TILE_WALL);
         self.contours = contours(&self.matrix, TILE_WALL);
     }
 
@@ -68,6 +71,15 @@ impl Generator {
 
     pub fn get_contours(&self) -> &HashSet<Position> {
         &self.contours
+    }
+
+    pub fn region_id(&self, position: &Position) -> Option<usize> {
+        for (id, set) in self.regions.iter().enumerate() {
+            if set.contains(position) {
+                return Some(id);
+            }
+        }
+        None
     }
 
     pub fn regenerate(&mut self) {
