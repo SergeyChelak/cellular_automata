@@ -27,6 +27,9 @@ impl Generator {
             return;
         };
         self.matrix = matrix;
+    }
+
+    fn print_fill_rate(&self) {
         println!("fill ratio: {:.2}", fill_ratio(&self.matrix, TILE_WALL));
     }
 
@@ -48,11 +51,13 @@ impl Generator {
         for _ in 0..self.iterations {
             self.generate();
         }
+        self.print_fill_rate();
     }
 
     pub fn next_iteration(&mut self) {
         self.increase_iterations();
         self.generate();
+        self.print_fill_rate();
     }
 
     pub fn increase_noise_density(&mut self) {
