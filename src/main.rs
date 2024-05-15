@@ -1,4 +1,5 @@
 mod generator;
+mod matrix;
 
 use std::time::{Duration, Instant};
 
@@ -15,7 +16,7 @@ use sdl2::{
 
 const WINDOW_TITLE: &str = "Cellular Automata Demo";
 const WINDOW_SIZE_HEIGHT: u32 = 800;
-const WINDOW_SIZE_WIDTH: u32 = 1200;
+const WINDOW_SIZE_WIDTH: u32 = 800;
 const TARGET_FPS: u128 = 60;
 const TARGET_FRAME_DURATION: u128 = 1000 / TARGET_FPS;
 
