@@ -77,7 +77,7 @@ impl Generator {
 
 fn noise_matrix(matrix: &mut Matrix, noise_density: u8) {
     let mut rng = thread_rng();
-    for row in matrix {
+    for row in matrix.iter_mut() {
         for elem in row {
             let val: u8 = rng.gen_range(1..=100);
             *elem = if val > noise_density {
@@ -87,24 +87,39 @@ fn noise_matrix(matrix: &mut Matrix, noise_density: u8) {
             }
         }
     }
+
+    let fill = TILE_WALL;
+    for row in matrix.iter_mut() {
+        *row.first_mut().unwrap() = fill;
+        *row.last_mut().unwrap() = fill;
+    }
+
+    matrix
+        .first_mut()
+        .unwrap()
+        .iter_mut()
+        .for_each(|x| *x = fill);
+
+    matrix
+        .last_mut()
+        .unwrap()
+        .iter_mut()
+        .for_each(|x| *x = fill);
 }
 
 fn moore_neighborhood(input: &Matrix) -> Matrix {
+    let row_count = input.len();
+    let col_count = input.first().unwrap().len();
     let mut output = input.clone();
-    for (i, row) in input.iter().enumerate() {
-        for (j, _) in row.iter().enumerate() {
-            let row_beg = if i > 0 { i - 1 } else { 0 };
-            let col_beg = if j > 0 { j - 1 } else { 0 };
+    for i in 1..row_count - 1 {
+        for j in 1..col_count - 1 {
             let mut wall_count = 0;
-            for adj_i in row_beg..=i + 1 {
-                for adj_j in col_beg..=j + 1 {
+            for adj_i in i - 1..=i + 1 {
+                for adj_j in j - 1..=j + 1 {
                     if adj_i == i && adj_j == j {
                         continue;
                     }
-                    let Some(val) = input.get(adj_i).and_then(|x| x.get(adj_j)) else {
-                        continue;
-                    };
-                    if *val == TILE_WALL {
+                    if input[adj_i][adj_j] == TILE_WALL {
                         wall_count += 1;
                     }
                 }
@@ -118,5 +133,3 @@ fn moore_neighborhood(input: &Matrix) -> Matrix {
     }
     output
 }
-
-// Noise density |Q+ 58 -A|  Iterations |W+ 5 -S|  R(egenerate)  N(ext iteration)
