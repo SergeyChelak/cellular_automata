@@ -4,6 +4,7 @@ mod matrix;
 use std::time::{Duration, Instant};
 
 use generator::Generator;
+use matrix::Position;
 use sdl2::{
     event::Event,
     keyboard::Keycode,
@@ -147,15 +148,19 @@ fn create_texture<'l>(
     let mut texture = texture_creator
         .create_texture_streaming(PixelFormatEnum::RGB24, cols, rows)
         .map_err(|err| err.to_string())?;
+    let contours = generator.get_contours();
     texture.with_lock(None, |buffer: &mut [u8], pitch: usize| {
         for row in 0..rows as usize {
             for col in 0..cols as usize {
                 let pos = row * pitch + 3 * col;
-                let (r, g, b) = if matrix[row][col] > 0 {
-                    (0xff, 0xff, 0xff)
-                } else {
-                    (0, 0, 0)
+                let mut color = (0, 0, 0);
+                if matrix[row][col] > 0 {
+                    color = (0xff, 0xff, 0xff);
                 };
+                if contours.contains(&Position { row, col }) {
+                    color = (0xff, 0x0, 0x0);
+                }
+                let (r, g, b) = color;
                 buffer[pos + 0] = r;
                 buffer[pos + 1] = g;
                 buffer[pos + 2] = b;

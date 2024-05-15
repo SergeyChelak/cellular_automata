@@ -1,4 +1,8 @@
-use crate::matrix::{fill_borders, fill_ratio, moore_neighborhood, noise_matrix, Matrix};
+use std::collections::HashSet;
+
+use crate::matrix::{
+    contours, fill_borders, fill_ratio, moore_neighborhood, noise_matrix, Matrix, Position,
+};
 
 const MATRIX_ROWS: usize = 60;
 const MATRIX_COLS: usize = 60;
@@ -10,6 +14,7 @@ pub struct Generator {
     noise_density: u8,
     iterations: usize,
     matrix: Matrix,
+    contours: HashSet<Position>,
 }
 
 impl Generator {
@@ -19,6 +24,7 @@ impl Generator {
             noise_density: 52,
             iterations: 3,
             matrix,
+            contours: Default::default(),
         }
     }
 
@@ -27,6 +33,7 @@ impl Generator {
             return;
         };
         self.matrix = matrix;
+        self.contours = contours(&self.matrix, TILE_WALL);
     }
 
     fn print_fill_rate(&self) {
@@ -43,6 +50,10 @@ impl Generator {
 
     pub fn get_matrix(&self) -> &Vec<Vec<u8>> {
         &self.matrix
+    }
+
+    pub fn get_contours(&self) -> &HashSet<Position> {
+        &self.contours
     }
 
     pub fn regenerate(&mut self) {

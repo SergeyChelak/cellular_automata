@@ -1,8 +1,10 @@
+use std::collections::HashSet;
+
 use rand::prelude::*;
 
 pub type Matrix = Vec<Vec<u8>>;
 
-#[derive(Default, Copy, Clone)]
+#[derive(Default, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct Position {
     pub row: usize,
     pub col: usize,
@@ -86,4 +88,35 @@ pub fn fill_ratio(input: &Matrix, value: u8) -> f32 {
         .map(|v| v.iter().filter(|&x| *x == value).count())
         .sum::<usize>();
     fill as f32 / total
+}
+
+pub fn contours(matrix: &Matrix, value: u8) -> HashSet<Position> {
+    let mut positions = HashSet::<Position>::new();
+    let rows = matrix.len();
+    for (i, row) in matrix.iter().enumerate() {
+        let cols = row.len();
+        for (j, val) in row.iter().enumerate() {
+            if *val != value {
+                continue;
+            }
+            let mut adj = Vec::with_capacity(4);
+            if i > 0 {
+                adj.push(matrix[i - 1][j]);
+            }
+            if i < rows - 1 {
+                adj.push(matrix[i + 1][j]);
+            }
+            if j > 0 {
+                adj.push(matrix[i][j - 1]);
+            }
+            if j < cols - 1 {
+                adj.push(matrix[i][j + 1]);
+            }
+            if adj.iter().all(|x| *x == *val) {
+                continue;
+            }
+            positions.insert(Position { row: i, col: j });
+        }
+    }
+    positions
 }
