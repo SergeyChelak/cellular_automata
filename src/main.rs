@@ -31,6 +31,7 @@ enum Command {
     DecreaseIterations,
     Regenerate,
     ShowStatus,
+    Filter,
     Exit,
 }
 
@@ -67,6 +68,7 @@ fn main() -> CAResult<()> {
                 IncreaseNoiseDensity => generator.increase_noise_density(),
                 Regenerate => generator.regenerate(),
                 NextIteration => generator.next_iteration(),
+                Filter => generator.filter(),
                 ShowStatus => println!("{}", get_status_bar(&generator)),
             }
         }
@@ -127,6 +129,11 @@ fn get_events(event_pump: &mut EventPump) -> Option<Command> {
                 keycode: Some(Keycode::N),
                 ..
             } => return Some(Command::NextIteration),
+
+            Event::KeyDown {
+                keycode: Some(Keycode::F),
+                ..
+            } => return Some(Command::Filter),
 
             Event::KeyDown { .. } => return Some(Command::ShowStatus),
             _ => {}

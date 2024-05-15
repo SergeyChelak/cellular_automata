@@ -1,11 +1,12 @@
 use std::collections::HashSet;
 
 use crate::matrix::{
-    contours, fill_borders, fill_ratio, moore_neighborhood, noise_matrix, Matrix, Position,
+    contours, fill_borders, fill_ratio, moore_neighborhood, noise_matrix, regions, Matrix, Position,
 };
 
 const MATRIX_ROWS: usize = 60;
 const MATRIX_COLS: usize = 60;
+const REGION_THRESHOLD: usize = 1;
 
 const TILE_FLOOR: u8 = 0;
 const TILE_WALL: u8 = 1;
@@ -33,6 +34,19 @@ impl Generator {
             return;
         };
         self.matrix = matrix;
+        self.contours = contours(&self.matrix, TILE_WALL);
+    }
+
+    pub fn filter(&mut self) {
+        let regions = regions(&mut self.matrix, TILE_WALL);
+        for region in regions.iter() {
+            if region.len() > REGION_THRESHOLD {
+                continue;
+            }
+            for pos in region.iter() {
+                self.matrix[pos.row][pos.col] = TILE_FLOOR;
+            }
+        }
         self.contours = contours(&self.matrix, TILE_WALL);
     }
 

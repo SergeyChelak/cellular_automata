@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashSet, VecDeque};
 
 use rand::prelude::*;
 
@@ -8,6 +8,52 @@ pub type Matrix = Vec<Vec<u8>>;
 pub struct Position {
     pub row: usize,
     pub col: usize,
+}
+
+impl Position {
+    fn up(&self, _dims: &Dimension) -> Option<Position> {
+        if self.row > 0 {
+            Some(Position {
+                row: self.row - 1,
+                col: self.col,
+            })
+        } else {
+            None
+        }
+    }
+
+    fn down(&self, dims: &Dimension) -> Option<Position> {
+        if self.row < dims.rows - 1 {
+            Some(Position {
+                row: self.row + 1,
+                col: self.col,
+            })
+        } else {
+            None
+        }
+    }
+
+    fn left(&self, _dims: &Dimension) -> Option<Position> {
+        if self.col > 0 {
+            Some(Position {
+                row: self.row,
+                col: self.col - 1,
+            })
+        } else {
+            None
+        }
+    }
+
+    fn right(&self, dims: &Dimension) -> Option<Position> {
+        if self.col > dims.cols - 1 {
+            Some(Position {
+                row: self.row,
+                col: self.col + 1,
+            })
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Default, Copy, Clone)]
@@ -119,4 +165,45 @@ pub fn contours(matrix: &Matrix, value: u8) -> HashSet<Position> {
         }
     }
     positions
+}
+
+pub fn regions(matrix: &Matrix, value: u8) -> Vec<HashSet<Position>> {
+    let mut regions = Vec::<HashSet<Position>>::new();
+    let mut visited = HashSet::<Position>::new();
+    let Some(dims) = size(matrix) else {
+        return regions;
+    };
+    for (i, row) in matrix.iter().enumerate() {
+        for (j, val) in row.iter().enumerate() {
+            if *val != value {
+                continue;
+            }
+            let mut region = HashSet::new();
+            let mut deque = VecDeque::<Position>::new();
+            deque.push_back(Position { row: i, col: j });
+            while let Some(pos) = deque.pop_front() {
+                if visited.contains(&pos) {
+                    continue;
+                }
+                [
+                    pos.up(&dims),
+                    pos.down(&dims),
+                    pos.left(&dims),
+                    pos.right(&dims),
+                ]
+                .iter()
+                .filter_map(|x| *x)
+                .filter(|p| matrix[p.row][p.col] == value)
+                .for_each(|p| {
+                    deque.push_back(p);
+                });
+                region.insert(pos);
+                visited.insert(pos);
+            }
+            if !region.is_empty() {
+                regions.push(region);
+            }
+        }
+    }
+    regions
 }
