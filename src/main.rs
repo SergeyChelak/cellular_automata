@@ -23,7 +23,7 @@ const TARGET_FRAME_DURATION: u128 = 1000 / TARGET_FPS;
 
 type CAColor = (u8, u8, u8);
 
-const CONTOUR_COLOR: CAColor = (0xff, 0x0, 0x0);
+const CONTOUR_SATURATION: u8 = 70;
 const DEFAULT_COLOR: CAColor = (0xff, 0xff, 0xff);
 const REGION_COLOR: [CAColor; 20] = [
     (255, 192, 64),
@@ -196,7 +196,7 @@ fn create_texture<'l>(
                     };
                 };
                 if contours.contains(&position) {
-                    color = saturate_color(&color, 50);
+                    color = saturate_color(&color, CONTOUR_SATURATION);
                 }
                 let (r, g, b) = color;
                 buffer[pos + 0] = r;
