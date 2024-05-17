@@ -67,9 +67,7 @@ pub fn size(matrix: &Matrix) -> Option<Dimension> {
     if rows == 0 {
         return None;
     }
-    let Some(cols) = matrix.first().map(|row| row.len()) else {
-        return None;
-    };
+    let cols = matrix.first().map(|row| row.len())?;
     Some(Dimension { rows, cols })
 }
 
@@ -100,10 +98,9 @@ pub fn fill_borders(matrix: &mut Matrix, fill: u8) {
         .for_each(|x| *x = fill);
 }
 
+#[allow(clippy::needless_range_loop)]
 pub fn moore_neighborhood(input: &Matrix, val_on: u8, val_off: u8) -> Option<Matrix> {
-    let Some(size) = size(input) else {
-        return None;
-    };
+    let size = size(input)?;
     let mut output = input.clone();
     for i in 1..size.rows - 1 {
         for j in 1..size.cols - 1 {
@@ -122,18 +119,6 @@ pub fn moore_neighborhood(input: &Matrix, val_on: u8, val_off: u8) -> Option<Mat
         }
     }
     Some(output)
-}
-
-pub fn fill_ratio(input: &Matrix, value: u8) -> f32 {
-    let Some(size) = size(input) else {
-        return 0.0;
-    };
-    let total = (size.rows * size.cols) as f32;
-    let fill = input
-        .iter()
-        .map(|v| v.iter().filter(|&x| *x == value).count())
-        .sum::<usize>();
-    fill as f32 / total
 }
 
 pub fn contours(matrix: &Matrix, value: u8) -> HashSet<Position> {

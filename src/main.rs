@@ -59,6 +59,7 @@ enum Command {
     Regenerate,
     ShowStatus,
     Filter,
+    FullProcessingCycle,
     Exit,
 }
 
@@ -96,6 +97,7 @@ fn main() -> CAResult<()> {
                 Regenerate => generator.regenerate(),
                 NextIteration => generator.next_iteration(),
                 Filter => generator.filter(),
+                FullProcessingCycle => generator.full_cycle(),
                 ShowStatus => println!("{}", get_status_bar(&generator)),
             }
         }
@@ -161,6 +163,11 @@ fn get_events(event_pump: &mut EventPump) -> Option<Command> {
                 ..
             } => return Some(Command::Filter),
 
+            Event::KeyDown {
+                keycode: Some(Keycode::M),
+                ..
+            } => return Some(Command::FullProcessingCycle),
+
             Event::KeyDown { .. } => return Some(Command::ShowStatus),
             _ => {}
         }
@@ -168,6 +175,7 @@ fn get_events(event_pump: &mut EventPump) -> Option<Command> {
     None
 }
 
+#[allow(clippy::needless_range_loop)]
 fn create_texture<'l>(
     generator: &Generator,
     texture_creator: &'l TextureCreator<WindowContext>,
@@ -199,7 +207,7 @@ fn create_texture<'l>(
                     color = saturate_color(&color, CONTOUR_SATURATION);
                 }
                 let (r, g, b) = color;
-                buffer[pos + 0] = r;
+                buffer[pos] = r;
                 buffer[pos + 1] = g;
                 buffer[pos + 2] = b;
             }

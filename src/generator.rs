@@ -1,11 +1,11 @@
 use std::collections::HashSet;
 
 use crate::matrix::{
-    contours, fill_borders, fill_ratio, moore_neighborhood, noise_matrix, regions, Matrix, Position,
+    contours, fill_borders, moore_neighborhood, noise_matrix, regions, Matrix, Position,
 };
 
-const MATRIX_ROWS: usize = 100;
-const MATRIX_COLS: usize = 100;
+const MATRIX_ROWS: usize = 70;
+const MATRIX_COLS: usize = 70;
 const REGION_THRESHOLD: usize = 3;
 
 const TILE_FLOOR: u8 = 0;
@@ -23,7 +23,7 @@ impl Generator {
     pub fn new() -> Self {
         let matrix = vec![vec![0; MATRIX_COLS]; MATRIX_ROWS];
         Self {
-            noise_density: 52,
+            noise_density: 58,
             iterations: 3,
             matrix,
             contours: Default::default(),
@@ -41,8 +41,8 @@ impl Generator {
     }
 
     pub fn filter(&mut self) {
-        let regions = regions(&mut self.matrix, TILE_WALL);
-        for region in regions.iter() {
+        self.regions = regions(&self.matrix, TILE_WALL);
+        for region in self.regions.iter() {
             if region.len() > REGION_THRESHOLD {
                 continue;
             }
@@ -51,10 +51,22 @@ impl Generator {
             }
         }
         self.contours = contours(&self.matrix, TILE_WALL);
+        self.regions = regions(&self.matrix, TILE_WALL);
     }
 
-    fn print_fill_rate(&self) {
-        println!("fill ratio: {:.2}", fill_ratio(&self.matrix, TILE_WALL));
+    pub fn full_cycle(&mut self) {
+        self.regenerate();
+        let regions = regions(&self.matrix, TILE_FLOOR);
+        let max = regions.iter().map(|x| x.len()).max().unwrap_or_default();
+        for region in regions.iter() {
+            if region.len() == max {
+                continue;
+            }
+            for pos in region.iter() {
+                self.matrix[pos.row][pos.col] = TILE_WALL;
+            }
+        }
+        self.filter();
     }
 
     pub fn noise_density(&self) -> u8 {
@@ -88,13 +100,11 @@ impl Generator {
         for _ in 0..self.iterations {
             self.generate();
         }
-        self.print_fill_rate();
     }
 
     pub fn next_iteration(&mut self) {
         self.increase_iterations();
         self.generate();
-        self.print_fill_rate();
     }
 
     pub fn increase_noise_density(&mut self) {
