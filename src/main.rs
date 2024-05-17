@@ -64,6 +64,7 @@ enum Command {
 }
 
 fn main() -> CAResult<()> {
+    show_commands();
     let sdl = sdl2::init()?;
     let video_subsystem = sdl.video()?;
     let window = video_subsystem
@@ -218,7 +219,7 @@ fn create_texture<'l>(
 
 fn get_status_bar(generator: &Generator) -> String {
     format!(
-        "Noise density |Q+ {} -A|  Iterations |W+ {} -S|  R(egenerate)  N(ext iteration)",
+        "Noise density: {} |  Iterations {}",
         generator.noise_density(),
         generator.iterations()
     )
@@ -231,4 +232,21 @@ fn saturate_color(color: &CAColor, val: u8) -> CAColor {
         g.saturating_add(val),
         b.saturating_add(val),
     )
+}
+
+fn show_commands() {
+    println!("Maze generator\n\nCommands:");
+    let disp = |cmd: &str, descr: &str| {
+        println!("{cmd:12}{descr}");
+    };
+    disp("q", "increase noise density");
+    disp("a", "decrease noise density");
+    disp("w", "increase iterations");
+    disp("s", "decrease iterations");
+    disp("n", "next iteration with current matrix");
+    disp("r", "regenerate using current settings");
+    disp("f", "filter small regions");
+    disp("m", "perform full cycle maze generation");
+    disp("esc", "exit");
+    disp("other key", "display generator settings");
 }
